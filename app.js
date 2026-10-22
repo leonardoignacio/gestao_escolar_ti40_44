@@ -5,12 +5,11 @@ import cors from 'cors'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import genericRoutes from './routes/generic.routes.js'
+import authRoutes from './routes/auth.routes.js'
 const app = express()
 // Obtém diretório atual
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 // Configuração do CORS - Libera o acesso para o ambiente de desenvolvimento
-
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
@@ -27,6 +26,9 @@ app.use(express.static(path.join(__dirname, 'views')))
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'))
 })
+
+// Rotas públicas de autenticação
+app.use('/', authRoutes)
 
 // Rotas da API
 app.use('/', genericRoutes)
