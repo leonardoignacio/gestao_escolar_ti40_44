@@ -1,0 +1,54 @@
+# Dependências
+node_modules/
+
+# Ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Cobertura de testes
+coverage/
+.nyc_output/
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Uploads
+uploads/
+
+# Banco de dados locais
+*.sqlite
+*.sqlite3
+*.db
+
+# Certificados e chaves
+*.pem
+*.key
+*.crt
+
+# PM2
+.pids
+*.pid
+*.pid.lock
+
+# VSCode
+.vscode/
+
+# IntelliJ/WebStorm
+.idea/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
