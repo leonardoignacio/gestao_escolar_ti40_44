@@ -9,7 +9,7 @@ import authRoutes from './routes/auth.routes.js'
 const app = express()
 // Obtém diretório atual
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// Configuração do CORS - Libera o acesso para o ambiente de desenvolvimento
+// Configuração do CORS 
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
