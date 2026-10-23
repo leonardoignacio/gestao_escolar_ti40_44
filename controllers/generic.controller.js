@@ -27,7 +27,6 @@ export const criar = async (req, res) => {
     if (tabela === 'usuario') {
       delete novo.senha
     }
-
     res.status(201).json(novo)
   } catch (error) {
     res.status(400).json({ erro: error.message })

@@ -29,7 +29,7 @@ router.get('/vitrine', (req, res, next) => {
 // Injeção do middleware "validarRequisicao" antes da função criar e atualizar
 router.post('/:tabela', autenticar, validarRequisicao, controller.criar)
 router.get(['/:tabela/:id', '/:tabela'], autenticar, controller.listar)
-router.put('/:tabela/:id', autenticar, validarRequisicao, controller.atualizar)
+router.patch('/:tabela/:id', autenticar, validarRequisicao, controller.atualizar)
 router.delete('/:tabela/:id', autenticar, controller.remover)
 
 export default router
