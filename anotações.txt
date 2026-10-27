@@ -1,0 +1,17 @@
+//Remover a versão 8 do prisma e instalar a 7
+npm uninstall prisma
+npm uninstall prisma @prisma/client
+npm cache clean --force
+
+//Reinstalar o Prisma 7
+npm install prisma@^7.10.1 @prisma/config --save-dev
+npm install @prisma/client@^7.10.1
+npm install @types/node --save-dev
+
+//iniciar o prisma
+npx prisma init --datasource-provider postgresql
+
+//Migration
+npx prisma migrate dev --name init_database
+
+
