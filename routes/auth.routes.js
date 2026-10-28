@@ -1,10 +1,13 @@
-import { Router } from 'express'
-import { login } from '../controllers/auth.controller.js'
-import { validarLogin } from '../middlewares/validacao.middleware.js'
+import { Router } from 'express';
+import authController from '../controllers/auth.controller.js';
 
-const router = Router()
+const router = Router();
 
-// O middleware "validarLogin" bloqueia requisições malformadas antes de bater no banco de dados
-router.post('/login', validarLogin, login)
+// ==========================================
+// ROTAS DE AUTENTICAÇÃO
+// ==========================================
 
-export default router
+// Rota pública para emissão do JWT
+router.post('/login', authController.login);
+
+export default router;

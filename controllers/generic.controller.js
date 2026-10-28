@@ -1,64 +1,80 @@
-import argon2 from 'argon2' //import bcrypt from 'bcrypt'
-import prisma from '../config/database.js'
+/**
+ * @class GenericController
+ * @description Superclasse que implementa as rotas padrão RESTful (CRUD).
+ * Evita repetição de código (DRY) nos controladores de domínio.
+ */
+export default class GenericController {
+    constructor(repository) {
+        if (!repository) {
+            throw new Error("[Arquitetura] Um repositório deve ser injetado no GenericController.");
+        }
+        this.repository = repository;
 
-export const listar = async (req, res) => {
-  try {
-    const { tabela } = req.params
-    let queryArgs = {}
-
-    const dados = await prisma[tabela].findMany(queryArgs)
-    res.status(200).json(dados)
-  } catch (error) {
-    res.status(500).json({ erro: error.message })
-  }
-}
-
-export const criar = async (req, res) => {
-  try {
-    const { tabela } = req.params
-    const dados = req.body
-
-    // REGRA DE SEGURANÇA: Criptografia de Senha
-    if (tabela === 'usuario' && dados.senha) {
-      dados.senha = await argon2.hash(dados.senha)
+        // O Express perde o contexto do 'this' ao invocar o método na rota.
+        // O .bind(this) garante que a classe saiba quem ela é em tempo de execução.
+        this.listar = this.listar.bind(this);
+        this.obterPorId = this.obterPorId.bind(this);
+        this.criar = this.criar.bind(this);
+        this.atualizar = this.atualizar.bind(this);
+        this.remover = this.remover.bind(this);
     }
-    const novo = await prisma[tabela].create({ data: dados })    
-    // Removemos a senha do objeto de retorno por segurança
-    if (tabela === 'usuario') {
-      delete novo.senha
+
+    async listar(req, res) {
+        try {
+            const dados = await this.repository.findAll();
+            return res.status(200).json(dados);
+        } catch (error) {
+            console.error(`[${this.constructor.name}.listar] Erro:`, error);
+            return res.status(500).json({ erro: "Falha interna ao listar registros." });
+        }
     }
-    res.status(201).json(novo)
-  } catch (error) {
-    res.status(400).json({ erro: error.message })
-  }
-}
 
-export const atualizar = async (req, res) => {
-  try {
-    const { tabela, id } = req.params
-    // Se houver atualização de senha, criptografa novamente
-    if (tabela === 'usuario' && req.body.senha) {
-      req.body.senha = await argon2.hash(req.body.senha)
+    async obterPorId(req, res) {
+        try {
+            const { id } = req.params;
+            const registro = await this.repository.findById(id);
+            
+            if (!registro) {
+                return res.status(404).json({ erro: "Registro não encontrado ou desativado." });
+            }
+            return res.status(200).json(registro);
+        } catch (error) {
+            console.error(`[${this.constructor.name}.obterPorId] Erro:`, error);
+            return res.status(500).json({ erro: "Falha interna ao buscar o registro." });
+        }
     }
-    const atualizado = await prisma[tabela].update({
-      where: { id: Number(id) },
-      data: req.body
-    })
-    if (tabela === 'usuario') delete atualizado.senha
-    res.status(200).json(atualizado)
 
-  } catch (error) {
-    res.status(400).json({ erro: error.message })
-  }
-}
+    async criar(req, res) {
+        try {
+            const novoRegistro = await this.repository.create(req.body);
+            return res.status(201).json(novoRegistro);
+        } catch (error) {
+            console.error(`[${this.constructor.name}.criar] Erro:`, error);
+            return res.status(400).json({ erro: "Falha ao criar registro. Verifique os dados enviados." });
+        }
+    }
 
-export const remover = async (req, res) => {
-  try {
-    const { tabela, id } = req.params
-    
-    await prisma[tabela].delete({ where: { id: Number(id) } })
-    res.status(204).send()
-  } catch (error) {
-    res.status(400).json({ erro: error.message })
-  }
+    async atualizar(req, res) {
+        try {
+            const { id } = req.params;
+            const registroAtualizado = await this.repository.update(id, req.body);
+            return res.status(200).json(registroAtualizado);
+        } catch (error) {
+            console.error(`[${this.constructor.name}.atualizar] Erro:`, error);
+            return res.status(400).json({ erro: error.message || "Falha ao atualizar o registro." });
+        }
+    }
+
+    async remover(req, res) {
+        try {
+            const { id } = req.params;
+            // Executa o Soft Delete provido pelo GenericRepository
+            await this.repository.delete(id);
+            // 204 No Content é o padrão RESTful para exclusões bem-sucedidas
+            return res.status(204).send();
+        } catch (error) {
+            console.error(`[${this.constructor.name}.remover] Erro:`, error);
+            return res.status(400).json({ erro: error.message || "Falha ao remover o registro." });
+        }
+    }
 }

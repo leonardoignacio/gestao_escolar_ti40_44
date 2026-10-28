@@ -10,8 +10,42 @@ npm install @types/node --save-dev
 
 //iniciar o prisma
 npx prisma init --datasource-provider postgresql
+npm install pg @prisma/adapter-pg
 
 //Migration
 npx prisma migrate dev --name init_database
 
+//Geração do client
+npx prisma generate
 
+
+Fluxo de dados da nossa arquitetura ficará unidirecional e elegante, seguindo esta esteira:
+
+Requisição HTTP ➔ Rota (Express) ➔ Controlador (Regra de Orquestração) ➔ Repositório (Regra de Persistência) ➔ Prisma (ORM) ➔ Neon (PostgreSQL)
+
+
+gestao_escolar_ti40_44/
+├── node_modules/
+├── prisma/
+│   ├── migrations/           # Histórico de alterações do banco (Gerado pelo Prisma)
+│   └── schema.prisma         # Definição estrita das tabelas (Já finalizamos)
+├── database/
+│   └── prisma.js             # Singleton de conexão (Vamos recomeçar por aqui)
+├── repositories/
+│   ├── generic.repository.js # CRUD genérico e injeção do Soft Delete
+│   ├── aluno.repository.js   # Herda o genérico + buscas específicas (ex: por matrícula)
+│   └── usuario.repository.js # Herda o genérico + buscas de segurança
+├── controllers/
+│   ├── aluno.controller.js   # Regras HTTP, validação e orquestração do aluno
+│   └── auth.controller.js    # Lógica de login e geração do JWT
+├── routes/
+│   ├── aluno.routes.js       # Endpoints (GET, POST, PUT, DELETE) de alunos
+│   └── auth.routes.js        # Endpoints públicos de login
+├── middlewares/
+│   └── auth.middleware.js    # Barreira de segurança (Validação do Token JWT)
+├── .env                      # Credenciais e portas (Já finalizamos)
+├── .gitignore
+├── app.js                    # Configurações do Express (Cors, JSON, injeção de rotas)
+├── package.json              # type: "module" e dependências
+├── prisma.config.ts          # Contrato de configuração do CLI v7+ (Já finalizamos)
+└── server.js                 # Ponto de entrada (Inicializa o app.listen)
